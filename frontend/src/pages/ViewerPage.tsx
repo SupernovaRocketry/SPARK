@@ -37,7 +37,7 @@ export function ViewerPage({ socketUrl }: Props) {
 
   return (
     <TelemetryProvider data={telemetry}>
-      <div style={{ padding: '20px' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         <TelemetryDashboard />
       </div>
     </TelemetryProvider>

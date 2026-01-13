@@ -6,26 +6,26 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #f0f2f5;
-  color: #333;
-  display: flex;
-  justify-content: center;
-  min-height: 100vh;
+  background-color: #1e1e1e;
+  color: #eee;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 #root {
   width: 100%;
-  max-width: 800px;
-  margin: 0 auto;
-  text-align: center;
-  padding: 2rem;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 .container {
-  background: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  height: 100%;
+  width: 100%;
+  padding: 0;
+  background-color: #1e1e1e;
+  display: flex;
+  flex-direction: column;
 }
 
 h1 {

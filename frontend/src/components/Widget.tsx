@@ -11,8 +11,8 @@ export const Widget: React.FC<WidgetProps> = ({ title, value, unit }) => {
   return (
     <div className="widget-card">
       <div className="widget-title">{title}</div>
-      <div className="widget-value">
-        {value}
+      <div className="widget-value-container">
+        <div className="widget-value">{value}</div>
         {unit && <span className="widget-unit">{unit}</span>}
       </div>
     </div>
@@ -28,7 +28,11 @@ interface VectorWidgetProps {
 }
 
 export const VectorWidget: React.FC<VectorWidgetProps> = ({ title, x, y, z, unit }) => {
-  const format = (n: any) => (typeof n === 'number' ? n.toFixed(2) : '---');
+  const format = (n: any) => {
+    if (typeof n !== 'number') return '---';
+    const sign = n >= 0 ? '+' : '';
+    return `${sign}${n.toFixed(2)}`;
+  };
   
   return (
     <div className="widget-card">
@@ -36,18 +40,24 @@ export const VectorWidget: React.FC<VectorWidgetProps> = ({ title, x, y, z, unit
       <div className="widget-group">
         <div className="widget-sub-value">
           <span className="widget-sub-label">X</span>
-          <span className="widget-value">{format(x)}</span>
+          <div className="widget-value-container">
+            <span className="widget-value">{format(x)}</span>
+          </div>
         </div>
         <div className="widget-sub-value">
           <span className="widget-sub-label">Y</span>
-          <span className="widget-value">{format(y)}</span>
+          <div className="widget-value-container">
+            <span className="widget-value">{format(y)}</span>
+          </div>
         </div>
         <div className="widget-sub-value">
           <span className="widget-sub-label">Z</span>
-          <span className="widget-value">{format(z)}</span>
+          <div className="widget-value-container">
+            <span className="widget-value">{format(z)}</span>
+          </div>
         </div>
       </div>
-        {unit && <div className="widget-unit">{unit}</div>}
+        {unit && <div className="widget-unit" style={{marginTop: '0.5rem'}}>{unit}</div>}
     </div>
   );
 };

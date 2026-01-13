@@ -21,8 +21,6 @@ function App() {
 
   return (
     <div className="container">
-      <h1>Teste de WebSocket (Socket.IO)</h1>
-
       {isAdminRoute ? (
         <AdminPage socketUrl={SOCKET_URL} />
       ) : (
