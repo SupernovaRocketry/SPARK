@@ -6,7 +6,7 @@ type Props = {
 };
 
 function getSessionToken() {
-  const STORAGE_KEY = 'supervisorio_admin_token';
+  const STORAGE_KEY = 'admin_token';
   const existing = sessionStorage.getItem(STORAGE_KEY);
   if (existing) return existing;
 

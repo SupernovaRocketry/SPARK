@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { TelemetryDashboard } from '../components/TelemetryDashboard';
+import { TelemetryProvider, type TelemetryData } from '../context/TelemetryContext';
 
 type Props = {
   socketUrl: string;
 };
 
 export function ViewerPage({ socketUrl }: Props) {
-  const [lastNumber, setLastNumber] = useState<number | null>(null);
+  const [telemetry, setTelemetry] = useState<TelemetryData | null>(null);
 
   const socketRef = useRef<Socket | null>(null);
 
@@ -21,8 +23,8 @@ export function ViewerPage({ socketUrl }: Props) {
       
       socket.on('data_update', (data: any) => {
         console.log("UserWindow recebeu:", data);
-        if (data?.number !== undefined) {
-          setLastNumber(data.number);
+        if (data) {
+          setTelemetry(data as TelemetryData);
         }
       });
 
@@ -34,19 +36,10 @@ export function ViewerPage({ socketUrl }: Props) {
   }, [socketUrl]);
 
   return (
-    <>
-      <div className="display-box">
-        <h2>Painel de Visualização</h2>
-        <div className="number-display">{lastNumber !== null ? lastNumber : '---'}</div>
+    <TelemetryProvider data={telemetry}>
+      <div style={{ padding: '20px' }}>
+        <TelemetryDashboard />
       </div>
-
-      <div className="user-controls">
-        <p>Você está no modo visitante.</p>
-      </div>
-
-      <div className="info">
-        <p>URL Socket: {socketUrl}</p>
-      </div>
-    </>
+    </TelemetryProvider>
   );
 }
