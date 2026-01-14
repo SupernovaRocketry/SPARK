@@ -1,5 +1,5 @@
 import React from 'react';
-import { VectorWidget } from '../Widget';
+import { VectorWidget } from '../BaseWidget';
 import { useTelemetry } from '../../context/TelemetryContext';
 
 export const AccelerometerWidget: React.FC = () => {

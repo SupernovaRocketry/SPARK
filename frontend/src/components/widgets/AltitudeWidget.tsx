@@ -1,5 +1,5 @@
 import React from 'react';
-import { Widget } from '../Widget';
+import { Widget } from '../BaseWidget';
 import { useTelemetry } from '../../context/TelemetryContext';
 
 export const AltitudeWidget: React.FC = () => {
