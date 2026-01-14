@@ -26,7 +26,11 @@ interface WidgetInfo {
   colSpan: number;
 }
 
-export const TelemetryDashboard: React.FC = () => {
+interface Props {
+  allowedWidgets?: string[];
+}
+
+export const TelemetryDashboard: React.FC<Props> = ({ allowedWidgets }) => {
   const defaultWidgets = useMemo<WidgetInfo[]>(() => {
     return Object.entries(widgetModules).map(([path, module], index) => {
       const Component = module[Object.keys(module).find(key => key !== 'default') || 'default'] || Object.values(module)[0];
@@ -57,6 +61,10 @@ export const TelemetryDashboard: React.FC = () => {
         colSpan: sizeMap[w.id] || w.colSpan
       }));
       
+      if (allowedWidgets) {
+        initialWidgets = initialWidgets.filter(w => allowedWidgets.includes(w.name));
+      }
+
       if (savedOrder) {
         const orderIds: string[] = JSON.parse(savedOrder);
         const widgetMap = new Map(initialWidgets.map(w => [w.id, w]));
@@ -75,7 +83,7 @@ export const TelemetryDashboard: React.FC = () => {
         setWidgets(initialWidgets);
       }
     } catch {}
-  }, [defaultWidgets]);
+  }, [defaultWidgets, allowedWidgets]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
