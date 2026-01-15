@@ -19,6 +19,13 @@ type Client = {
   widgets?: string[];
 };
 
+type SerialPortInfo = {
+  port: string;
+  description: string;
+  status: string;
+  active: boolean;
+};
+
 function getSessionToken() {
   const STORAGE_KEY = 'admin_token';
   const existing = sessionStorage.getItem(STORAGE_KEY);
@@ -36,6 +43,10 @@ export function AdminPage({ socketUrl }: Props) {
   const [globalWidgets, setGlobalWidgets] = useState<string[]>([]);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
   
+  const [serialPorts, setSerialPorts] = useState<SerialPortInfo[]>([]);
+  const [currentPort, setCurrentPort] = useState<string>('');
+  const [scanning, setScanning] = useState(false);
+
   const socketRef = useRef<Socket | null>(null);
 
   useEffect(() => {
@@ -53,10 +64,17 @@ export function AdminPage({ socketUrl }: Props) {
       
       socket.on('admin_auth_success', () => {
         socket.emit('get_global_widgets');
+        socket.emit('get_serial_ports');
       });
       
       socket.on('clients_update', (data: Client[]) => {
         setClients(data);
+      });
+
+      socket.on('serial_ports_list', (data: { current: string, ports: SerialPortInfo[] }) => {
+        setSerialPorts(data.ports);
+        setCurrentPort(data.current);
+        setScanning(false);
       });
 
       socket.on('global_widgets_update', (widgets: string[]) => {
@@ -105,8 +123,83 @@ export function AdminPage({ socketUrl }: Props) {
     setEditingClient({ ...editingClient, widgets: undefined });
   };
 
+  const refreshPorts = () => {
+    setScanning(true);
+    socketRef.current?.emit('get_serial_ports');
+  };
+
+  const changePort = (port: string) => {
+    socketRef.current?.emit('set_serial_port', port);
+  };
+
   return (
-    <div style={{ padding: '20px', color: '#fff', minHeight: '100vh', boxSizing: 'border-box', paddingBottom: '100px' }}>
+    <div className="admin-scroll">
+      <div style={{ backgroundColor: '#2a2a2a', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #444' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+          <h3>Configuração Serial (Receptor)</h3>
+          <button 
+            onClick={refreshPorts} 
+            disabled={scanning}
+            style={{ 
+              padding: '5px 15px', 
+              background: scanning ? '#555' : '#1976d2', 
+              color: '#fff', 
+              border: 'none', 
+              borderRadius: '4px',
+              cursor: scanning ? 'default' : 'pointer'
+            }}
+          >
+            {scanning ? 'Escaneando...' : 'Escanear Portas'}
+          </button>
+        </div>
+
+        {serialPorts.length === 0 ? (
+           <p style={{ color: '#888' }}>Nenhuma porta serial detectada.</p>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '10px' }}>
+            {serialPorts.map(sp => {
+              const isSelected = sp.port === currentPort;
+              let borderColor = '#444';
+              let statusColor = '#888';
+              
+              if (sp.active) {
+                 borderColor = '#4caf50';
+                 statusColor = '#4caf50';
+              } else if (isSelected) {
+                 borderColor = '#2196f3';
+                 statusColor = '#2196f3';
+              }
+
+              return (
+                <div 
+                  key={sp.port} 
+                  onClick={() => changePort(sp.port)}
+                  style={{ 
+                    border: `2px solid ${borderColor}`,
+                    background: isSelected ? 'rgba(33, 150, 243, 0.1)' : '#333',
+                    padding: '10px',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    opacity: scanning ? 0.7 : 1
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <strong style={{ fontSize: '1.1em' }}>{sp.port}</strong>
+                    {sp.active && <span style={{ fontSize: '0.8em', background: '#4caf50', color: '#000', padding: '2px 6px', borderRadius: '4px' }}>DATA</span>}
+                  </div>
+                  <span style={{ fontSize: '0.9em', color: '#aaa', marginTop: '5px' }}>{sp.description}</span>
+                  <span style={{ fontSize: '0.8em', color: statusColor, marginTop: '5px' }}>
+                    {isSelected ? 'CONECTADO' : sp.status}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
       <div style={{ backgroundColor: '#2a2a2a', padding: '15px', borderRadius: '8px', marginBottom: '20px', border: '1px solid #444' }}>
         <h3>Padrões Globais</h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>

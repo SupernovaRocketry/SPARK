@@ -9,6 +9,11 @@ socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
 SERVER_ADMIN_TOKEN = None
 ADMIN_SESSIONS = set()
 CONNECTED_CLIENTS = {}
+SERIAL_READER = None
+
+def set_serial_reader(instance):
+    global SERIAL_READER
+    SERIAL_READER = instance
 
 def get_available_widgets():
     widgets = []
@@ -181,6 +186,30 @@ def handle_admin_publish(data):
         socketio.emit('admin_auth_failed', "Não autenticado.", room=sid)
         return
     socketio.emit('data_update', data)
+
+@socketio.on('get_serial_ports')
+def handle_get_serial_ports():
+    sid = request.sid
+    if sid not in ADMIN_SESSIONS:
+        return
+    
+    if SERIAL_READER:
+        try:
+            ports = SERIAL_READER.get_ports_info()
+            socketio.emit('serial_ports_list', {'current': SERIAL_READER.port, 'ports': ports}, room=sid)
+        except Exception as e:
+            print(f"Erro ao listar portas: {e}")
+            socketio.emit('serial_ports_error', str(e), room=sid)
+
+@socketio.on('set_serial_port')
+def handle_set_serial_port(port_name):
+    sid = request.sid
+    if sid not in ADMIN_SESSIONS:
+        return
+    
+    if SERIAL_READER:
+        SERIAL_READER.set_port(port_name)
+        handle_get_serial_ports()
 
 def run_flask_server(host='127.0.0.1', port=8080, debug=False):
     app = create_server(is_dev=debug)

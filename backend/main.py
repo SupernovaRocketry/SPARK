@@ -3,7 +3,7 @@ import os
 import sys
 import threading
 import subprocess
-from flask_server import run_flask_server
+from flask_server import run_flask_server, set_serial_reader
 import time
 from window_manager import UIMain
 from serial_reader import SerialReader
@@ -58,6 +58,7 @@ if __name__ == '__main__':
             pass
 
     serial_reader = SerialReader(port='COM7', baudrate=115200)
+    set_serial_reader(serial_reader)
     serial_reader.start()
 
     if DEV:
